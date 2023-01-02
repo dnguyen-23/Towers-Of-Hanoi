@@ -1,15 +1,15 @@
 import numpy as np
 
 #pegs: goal is to move all of the disks in order onto peg 3
+
+#Class to represent the pegs
 class Peg:
     def __init__(self, numDisk, num):
         self.pegList = [None] * numDisk
         self.pegNum = num
     def add(self, disk):
         #if the disk is the first disk in or the disk below is of larger width
-        # if (idx == 0 or (idx != -1 and self.pegList[idx - 1].width > disk.width)):
-        #     self.pegList[idx] = disk
-        #     disk.setPos(self.pegNum, idx)
+
         if type(disk) == Disk:
             for i in range(len(self.pegList)): #run through the pegList
                 # go from bottom to top
@@ -22,10 +22,7 @@ class Peg:
                     elif type(self.pegList[i - 1]) == Disk and self.pegList[i - 1].width > disk.width:
                             self.pegList[i] = disk
                             disk.setPos(self.pegNum, i)
-                # elif (elem == None):
-                #     if elem.width > disk.width:
-                #         self.pegList[i] = disk
-                #         disk.setPos(self.pegNum, len(self.pegList) - i)
+               
 
     def set(self, disk, idx):
         self.pegList[idx] = disk
@@ -48,6 +45,7 @@ class Peg:
                 break
         return temp
 
+#Class to represent the disks
 class Disk:
     def __init__ (self, width):
         self.width = width
@@ -56,9 +54,13 @@ class Disk:
         self.pegNum = pegNum
         self.height = height
 
+    
+    #Returns a tuple, 1st elem is the peg number, 2nd elem is the height on that peg (0-indexed)
     def getDiskPos(self):
         return (self.pegNum, self.height)
 
+
+#Starts the game by instantiating all of the disks and the pegs
 def startGame(numDisks):
     global peg1
     peg1 = Peg(numDisks, 1)
@@ -67,15 +69,6 @@ def startGame(numDisks):
     global peg3
     peg3 = Peg(numDisks, 3)
     #create the disks and add them to the pegs
-    # global disk1
-    # disk1 = Disk(1)
-    # global disk2
-    # disk2 = Disk(2)
-    # global disk3
-    # disk3 = Disk(3)
-    # global disk4
-    # disk4 = Disk(4)
-
     # instantiating the disks
     global goalState
     goalState = []
@@ -96,6 +89,8 @@ def startGame(numDisks):
 
 def printGame():
 
+    #Iterate through each peg and print the width of the disk present
+    #If no disk present at that position on the peg, None is printed
     for i in range(numDisks):
         width1 = None
         width2 = None
@@ -131,25 +126,15 @@ def printGame():
 #Preconditions: the destination must have a disk with a larger width
 #Effect: the disk will be moved to the destination peg
 def move(startPeg, destPeg):
-    # destIdx = destPeg.pegList.index(None)
-    # if destIdx != -1:
-    # moveDisk = None
-    # for i in range(len(startPeg)):
-    #     if type(startPeg[i]) is Disk:
-    #         pass
-    #     elif type(startPeg[i]) is None:
-    #         moveDisk = startPeg[i - 1]
-    #         startIdx = i - 1
     moveDisk = startPeg.pop()
     destPeg.add(moveDisk)
 
+
+#Prints the position of all of the disks
+#Position is a tuple, 1st element is the peg, 2nd element is the height on that peg (0-indexed)
 def getState():
     position = [None] * numDisks
     for i in range(numDisks):
-        # diskPos = [1, 2, 3]
-        # diskPos[0] = disks[i].pegNum
-        # diskPos[1] = disks[i].height
-        # # diskPos[2] = disks[i].width
         position[i] = disks[i].getDiskPos()
     return tuple(position)
 
@@ -172,12 +157,11 @@ def replicateState(pos):
 numDisks = 5
 disks = []
 startGame(numDisks)
-# disks = [disk1, disk2, disk3, disk4]
+
 pegs = [peg1, peg2, peg3]
 #1.) creating the queue and the visited
 # queue stores the relevant states
-# visited = [False] * (3**numDisks)
- #based on all of the possible states
+# based on all of the possible states
 visited = []
 queue = []
 startState = getState()
@@ -190,10 +174,9 @@ startState = getState()
 #2.) append the first state/source node
 pos = getState()
 queue.append(pos)
-printGame()
-print(getState())
-# idx = 0
-# visited[idx] = pos
+# printGame()
+# print(getState())
+
 visited.append(pos) #anything in visited has been visited; using index() to check if the element has been visited
 
 parentsToChildren = dict()
@@ -201,11 +184,11 @@ goalReached = False
 #problem: you need a way to track your position and go back.
 while queue and not goalReached: #while the queue is not empty
     previousPos = queue.pop(0) #start with the first element that was appended
-    # print(previousPos)
+    
     replicateState(previousPos)
-    print("This is the state of the game at the moment: ", getState())
+    # print("This is the state of the game at the moment: ", getState())
 
-    children = []
+    children = [] # children states that branch off of the parent/previous state or previous position
 
 
     #you need to replicate the state of previousPos bc you are checking for neighboring states from this position
@@ -227,13 +210,13 @@ while queue and not goalReached: #while the queue is not empty
                         # pegs[i].getTopDisk().height != numDisks - 1:
                     move(p, pegs[i]) #you want to be able to move back to a specified state.
                     curPos = getState()
-                    print("Position: ", curPos, "Disk movement: ", p.pegNum, ", ", pegs[i].pegNum)
+                    # print("Position: ", curPos, "Disk movement: ", p.pegNum, ", ", pegs[i].pegNum)
                     try:
-                        if visited.index(curPos) <= 0: #meaning that this position was visited
-                            print("visited")
+                        if visited.index(curPos) >= 0: #meaning that this position was visited
+                            # print("visited")
                             children.append(tuple(curPos))
                     except:
-                        print("not visited")
+                        # print("not visited")
                         visited.append(curPos)
                         queue.append(curPos)
                         if curPos == goalState:
@@ -244,15 +227,15 @@ while queue and not goalReached: #while the queue is not empty
 
                     #after you have found a possible move, make sure to reset the state
                     replicateState(previousPos)
-                    printGame()
+                    # printGame()
                     # print("This is the state of the game at the moment: ", getState())
         if goalReached == True:
             break
-    print("Children: ", children, "\n")
+    # print("Children: ", children, "\n")
     # after finding all of the children of a previous position, add them to the dictionary
     # only immutable datatypes are hashable, so you have to hash a tuple instead of a list
     parentsToChildren[previousPos] = tuple(children)
-    print(queue)
+    # print(queue)
 print("Finished checking all")
 # # Search for the solution path
 path = [goalState]
